@@ -241,7 +241,7 @@ class DataGenerator(object):
 
         def norm_test(df):
 
-            df[['ACT_COMP', 'ACT_READ', 'ACT_MATH', 'ACT_ENG', 'ACT_SCI', 'SAT_READ','SAT_MATH','SAT_COMP','GPA_HS']] = preprocessing.scale(df[['ACT_COMP', 'ACT_READ', 'ACT_MATH', 'ACT_ENG', 'ACT_SCI', 'SAT_READ','SAT_MATH', 'SAT_COMP']])
+            df[['ACT_COMP', 'ACT_READ', 'ACT_MATH', 'ACT_ENG', 'ACT_SCI', 'SAT_READ','SAT_MATH','SAT_COMP']] = preprocessing.scale(df[['ACT_COMP', 'ACT_READ', 'ACT_MATH', 'ACT_ENG', 'ACT_SCI', 'SAT_READ','SAT_MATH', 'SAT_COMP']])
 
             df['T_COMP'] = df[['ACT_COMP','SAT_COMP']].apply(lambda x: x.max(), axis=1)
             df['T_READ'] = df[['ACT_READ','SAT_READ']].apply(lambda x: x.max(), axis=1)
@@ -272,6 +272,11 @@ class DataGenerator(object):
 
         ### Create the Major Plan Change Index ###
 
+        # Convert plan codes to string values - floats are not iterable #
+        supreme_train['EOT_ACAD_PLAN_CD'] = supreme_train['EOT_ACAD_PLAN_CD'].apply(lambda x: str(x))
+        supreme_dev['EOT_ACAD_PLAN_CD'] = supreme_dev['EOT_ACAD_PLAN_CD'].apply(lambda x: str(x))
+
+        # Split subjetcs and plan types #
         supreme_train['SUBJECT'] = supreme_train['EOT_ACAD_PLAN_CD'].apply(lambda x: x[:4])
         supreme_train['PLAN_TYPE'] = supreme_train['EOT_ACAD_PLAN_CD'].apply(lambda x: x[4:6])
 
@@ -344,8 +349,12 @@ class DataGenerator(object):
         #                               #
         #################################
 
+        # Clean up semester_index as to eliminate floats and nan
+        supreme_train.dropna(inplace=True)
+        supreme_train['SEMESTER_INDEX'] = supreme_train['SEMESTER_INDEX'].astype('int32')
+        
+        # Change to numeric type
         supreme_train['TERM_CODE'] = pd.to_numeric(supreme_train['TERM_CODE'])
-
         supreme_dev['TERM_CODE'] = pd.to_numeric(supreme_dev['TERM_CODE'])
 
         ### Define t_0 chunk - demographics only ###
