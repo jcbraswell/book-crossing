@@ -363,6 +363,12 @@ class DataGenerator(object):
 
         seq['DEV0'] = supreme_dev[id_var + dem_var + resp_var]
 
+        # Eliminate dups in t_0
+
+        seq['TRAIN0'].drop_duplicates(inplace=True)
+
+        seq['DEV0'].drop_duplicates(inplace=True)
+
         ### Define all sequential chunks ###
 
         for s in supreme_train['SEMESTER_INDEX'].unique():

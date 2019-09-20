@@ -1,4 +1,5 @@
-#SciKitLearn Models
+#ML Modules and Models
+import tensorflow as tf
 from sklearn.linear_model import LogisticRegression, ElasticNetCV, SGDClassifier
 from sklearn.ensemble import GradientBoostingClassifier,RandomForestClassifier, AdaBoostClassifier,VotingClassifier
 
@@ -10,6 +11,12 @@ from sklearn.model_selection import train_test_split, cross_val_score, GridSearc
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, f1_score, precision_score, recall_score, roc_auc_score
 from sklearn.impute import SimpleImputer
 from sklearn import preprocessing
+
+#IMBALANCED DATA
+from imblearn.over_sampling import SMOTE, ADASYN, RandomOverSampler
+
+#Tools
+import time
 
 
 def model_tuner(X_train,y_train,X_dev,y_dev,model,grid = None):
@@ -51,18 +58,19 @@ def model_tuner(X_train,y_train,X_dev,y_dev,model,grid = None):
                         'training accuracy':train_accuracy,'classification report':report}
     return results_dict
 
-def seq_data(t, time_to_grad, features):
+def seq_data(data, t, time_to_grad, features,balance=False):
     train_t = 'TRAIN{}'.format(str(t))
     dev_t = 'DEV{}'.format(str(t))
     response = 'GRAD_IN_{}.0'.format(time_to_grad)
 
-    y_train = seq[train_t][response]
-    y_dev = seq[dev_t][response]
-    X_train = seq[train_t][features]
-    X_dev = seq[dev_t][features]
-
-    X_train, y_train = SMOTE().fit_sample(X_train, y_train)
-    X_dev, y_dev = SMOTE().fit_sample(X_dev, y_dev)
+    y_train = data[train_t][response]
+    y_dev = data[dev_t][response]
+    X_train = data[train_t][features]
+    X_dev = data[dev_t][features]
+    
+    if balance:
+        X_train, y_train = SMOTE().fit_sample(X_train, y_train)
+        X_dev, y_dev = SMOTE().fit_sample(X_dev, y_dev)
     
     return (X_train,y_train,X_dev,y_dev)
 
@@ -72,7 +80,7 @@ def accuracy_matrix_fn(df, data):
     aMat.reset_index(inplace=True,drop=True)
     return aMat
 
-def run_model(model,grid = None,label=None):
+def run_model(model,X_train,y_train,X_dev,y_dev,grid = None,label=None):
     start = time.time()
     results_log = model_tuner(X_train,y_train,X_dev,y_dev,model,grid)
     end = time.time()
@@ -81,7 +89,7 @@ def run_model(model,grid = None,label=None):
     
     return {'model':label,'dev accuracy':[results_log['dev accuracy']], 'training accuracy':[results_log['training accuracy']]}
 
-def run_model_xgb(label,num_round):
+def run_model_xgb(X_train,y_train,X_dev,y_dev,label,num_round):
     
     d_train = xgb.DMatrix(X_train, label=y_train)
     d_dev = xgb.DMatrix(X_dev, label=y_dev)
