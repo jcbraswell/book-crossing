@@ -1,3 +1,6 @@
+# Tools
+import pandas as pd
+
 #ML Modules and Models
 import tensorflow as tf
 from sklearn.linear_model import LogisticRegression, ElasticNetCV, SGDClassifier
@@ -67,12 +70,15 @@ def seq_data(data, t, time_to_grad, features,balance=False):
     y_dev = data[dev_t][response]
     X_train = data[train_t][features]
     X_dev = data[dev_t][features]
+    train_col = X_train.columns
     
     if balance:
         X_train, y_train = SMOTE().fit_sample(X_train, y_train)
-        X_dev, y_dev = SMOTE().fit_sample(X_dev, y_dev)
+
+    y_dev_df = data[dev_t][['COHORT','EMPLID',response]]
+    X_train = pd.DataFrame(data=X_train,columns=train_col)
     
-    return (X_train,y_train,X_dev,y_dev)
+    return (X_train,y_train,X_dev,y_dev,y_dev_df)
 
 def accuracy_matrix_fn(df, data):
     aMat = df
@@ -96,7 +102,7 @@ def run_model_xgb(X_train,y_train,X_dev,y_dev,label,num_round):
     
     param = {'max_depth': 6, 'eta': 0.6, 'objective': 'binary:logistic'}
     param['nthread'] = 4
-    param['eval_metric'] = 'auc'
+    param['eval_metric'] = ['auc']
     evallist = [(d_dev, 'eval'), (d_train, 'train')]
 
     bst = xgb.train(param, d_train, num_round, evallist, verbose_eval=True)
