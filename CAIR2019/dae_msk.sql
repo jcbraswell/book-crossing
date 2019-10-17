@@ -1,0 +1,26 @@
+SELECT
+    to_char(emplid) as emplid,
+    dem_cohort,
+    dem_diff_indx,
+    dae_emplid,
+    gender,
+    ethnicity,
+    first_generation,
+    dep_family_size,
+    minority,
+    applicant_family_size,
+    applicant_income,
+    pell_tot_emplid,
+    pell_eligibility,
+    esa_emplid,
+    act_comp,
+    act_read,
+    act_math,
+    act_eng,
+    act_sci,
+    sat_read,
+    sat_math,
+    sat_comp,
+    gpa_hs
+FROM
+    jbraswell.grad_predict_dae_masked
